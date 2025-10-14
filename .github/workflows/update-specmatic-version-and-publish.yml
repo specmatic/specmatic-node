@@ -1,0 +1,41 @@
+name: Update Specmatic Version and Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      specmatic-core-version:
+        description: Specmatic Core Version
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  update-specmatic-version-and-publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.specmatic-core-version != '' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Configure git cli
+        run: |
+          git config --global user.email "github-service-account@specmatic.io"
+          git config --global user.name "Specmatic GitHub Service Account"
+
+      - name: Update specmaticVersion in package.json
+        run: |
+          SPEC_VERSION="${{ github.event.inputs.specmatic-core-version }}"
+          jq ".specmaticVersion = \"$SPEC_VERSION\"" package.json > package.tmp.json && mv package.tmp.json package.json
+
+      - name: Commit and push changes
+        run: |
+          git add package.json
+          git commit -m "chore: bump specmaticVersion to ${{ github.event.inputs.specmatic-core-version }}"
+          git push
+
+      - name: Trigger publish workflow
+        uses: peter-evans/workflow-dispatch@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          workflow: publish.yml
+          ref: ${{ github.ref }}
