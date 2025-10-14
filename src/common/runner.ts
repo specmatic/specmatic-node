@@ -4,14 +4,14 @@ import { specmaticCoreJarName } from '../config';
 import logger from '../common/logger';
 import { ChildProcess, exec, spawn, SpawnOptions } from 'child_process';
 
-const callCore = (args: (string | number)[], done: (error: any) => void, onOutput: (message: string, error: boolean) => void): ChildProcess => {
+const callCore = (args: (string | number)[], done: (error: any) => void, onOutput: (message: string, error: boolean) => void, jvmArgs: string[] = []): ChildProcess => {
     const rootPath = path.resolve(__dirname, '..', '..');
     const specmaticJarPath = path.resolve(rootPath, specmaticCoreJarName);
-    return callJar(specmaticJarPath, args, done, onOutput);
+    return callJar(specmaticJarPath, args, done, onOutput, jvmArgs);
 };
 
-function callJar(jarPath: string, args: (string | number)[], done: (error: any) => void, onOutput: (message: string, error: boolean) => void) {
-    const argsList: string[] = [];
+function callJar(jarPath: string, args: (string | number)[], done: (error: any) => void, onOutput: (message: string, error: boolean) => void, jvmArgs: string[] = []): ChildProcess {
+    const argsList: string[] = [...jvmArgs];
     if (process.env['endpointsAPI']) {
         argsList.push(`-DendpointsAPI="${process.env['endpointsAPI']}"`);
     }
