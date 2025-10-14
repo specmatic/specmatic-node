@@ -22,6 +22,7 @@ This node module is a thin wrapper over the [specmatic executable jar](https://s
   - [IDE Support](#ide-support)
     - [Jest Framework](#jest-framework)
   - [Logging](#logging)
+  - [Environment Variables](#environment-variables)
   - [Known Issues](#known-issues)
     - [1. Node 17/18 - Connection Refused error when connecting to stub](#1-node-1718---connection-refused-error-when-connecting-to-stub)
     - [2. Error "ReferenceError: setImmediate is not defined"](#2-error-referenceerror-setimmediate-is-not-defined)
@@ -118,6 +119,33 @@ By default only warning and error messages are displayed. You can configure the 
 ```
 
 logLevel accepts all values supported by [winston logger](https://github.com/winstonjs/winston#logging-levels)
+
+## Environment Variables
+
+Specmatic Node supports several environment variables to customize the Java runtime behavior:
+
+### JAVA_OPTS
+
+You can pass JVM options to the Specmatic Java process using the `JAVA_OPTS` environment variable. The parser supports:
+- Quoted arguments with spaces: `JAVA_OPTS='-Xmx1024m -Dmy.prop="value with spaces"'`
+- Single and double quotes: `JAVA_OPTS="-Dmy.prop='single quotes' -Dother=\"double quotes\""`
+- Escaped characters: `JAVA_OPTS='-Dpath=C:\\Windows\\Temp'`
+- Complex expressions with special characters
+
+Example:
+```bash
+export JAVA_OPTS='-Xmx2048m -Dfile.encoding=UTF-8 -Djava.io.tmpdir="/tmp/specmatic"'
+npm run test
+```
+
+### Dealing with https proxies
+
+If your network requires the use of a proxy server to access external resources, you may need to configure your proxy settings using `JAVA_OPTS`.
+
+```
+export JAVA_OPTS='-Dhttps.proxyHost=proxy.example.com -Dhttps.proxyPort=3128 -Dhttp.proxyHost=proxy.example.com -Dhttp.proxyPort=3128'
+npm run
+```
 
 ## Known Issues
 
