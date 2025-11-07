@@ -13,6 +13,7 @@ jobs:
         with:
           node-version: 20
       - run: npm install
+      - run: npm test
       - run: npm run build
       - run: npm run prepack
       - uses: reedyuk/npm-version@1.2.2

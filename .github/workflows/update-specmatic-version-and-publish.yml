@@ -9,6 +9,13 @@ on:
         type: string
         default: ''
 
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.specmatic-core-version }}
+  cancel-in-progress: false
+
 jobs:
   update-specmatic-version-and-publish:
     runs-on: ubuntu-latest
@@ -16,6 +23,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
       - name: Configure git cli
         run: |
           git config --global user.email "github-service-account@specmatic.io"
@@ -26,16 +37,34 @@ jobs:
           SPEC_VERSION="${{ github.event.inputs.specmatic-core-version }}"
           jq ".specmaticVersion = \"$SPEC_VERSION\"" package.json > package.tmp.json && mv package.tmp.json package.json
 
+          if git diff --exit-code package.json; then
+            echo "::error::No changes made to package.json - version may already be set to $SPEC_VERSION"
+            exit 1
+          else
+            echo "Version updated successfully to $SPEC_VERSION"
+          fi
+
       - name: Commit and push changes
         run: |
           git add package.json
-          git commit -m "chore: bump specmaticVersion to ${{ github.event.inputs.specmatic-core-version }}"
+          git commit -m "chore: bump version and specmaticVersion to ${{ github.event.inputs.specmatic-core-version }}"
           git push
 
-      - name: Trigger publish workflow
-        uses: peter-evans/workflow-dispatch@v1
+      - name: Check if tag exists and create
+        run: |
+          TAG="${{ github.event.inputs.specmatic-core-version }}"
+          
+          if git show-ref --tags --verify --quiet "refs/tags/${TAG}"; then
+            echo "::error::Tag ${TAG} already exists"
+            exit 1
+          fi
+          
+          git tag "${TAG}"
+          git push origin "${TAG}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          workflow: publish.yml
-          ref: ${{ github.ref }}
+          tag_name: "${{ github.event.inputs.specmatic-core-version }}"
+          name: "v${{ github.event.inputs.specmatic-core-version }}"
+          generate_release_notes: true
