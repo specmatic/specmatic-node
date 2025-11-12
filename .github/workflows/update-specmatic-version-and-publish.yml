@@ -67,4 +67,5 @@ jobs:
         with:
           tag_name: "${{ github.event.inputs.specmatic-core-version }}"
           name: "v${{ github.event.inputs.specmatic-core-version }}"
+          token: ${{ secrets.SPECMATIC_GITHUB_TOKEN }}
           generate_release_notes: true
