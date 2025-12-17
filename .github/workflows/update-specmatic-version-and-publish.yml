@@ -36,6 +36,7 @@ jobs:
         run: |
           SPEC_VERSION="${{ github.event.inputs.specmatic-core-version }}"
           jq ".specmaticVersion = \"$SPEC_VERSION\"" package.json > package.tmp.json && mv package.tmp.json package.json
+          jq ".version = \"$SPEC_VERSION\"" package.json > package.tmp.json && mv package.tmp.json package.json
 
           if git diff --exit-code package.json; then
             echo "::error::No changes made to package.json - version may already be set to $SPEC_VERSION"
