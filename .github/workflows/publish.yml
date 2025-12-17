@@ -4,6 +4,10 @@ on:
   release:
     types: [published]
 
+permissions:
+  id-token: write  # Required for OIDC (publishing to NPM)
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -12,13 +16,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          registry-url: 'https://registry.npmjs.org'
       - run: npm install
       - run: npm test
       - run: npm run build
       - run: npm run prepack
-      - uses: reedyuk/npm-version@1.2.2
-        with:
-          version: ${{ github.event.release.tag_name }}
-      - uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish
