@@ -22,7 +22,7 @@ jobs:
     if: ${{ github.event.inputs.specmatic-core-version != '' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.ref_name }}
           fetch-depth: 0
@@ -53,12 +53,12 @@ jobs:
       - name: Check if tag exists and create
         run: |
           TAG="${{ github.event.inputs.specmatic-core-version }}"
-          
+
           if git show-ref --tags --verify --quiet "refs/tags/${TAG}"; then
             echo "::error::Tag ${TAG} already exists"
             exit 1
           fi
-          
+
           git tag "${TAG}"
           git push origin "${TAG}"
 
