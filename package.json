@@ -31,8 +31,8 @@
     "mocking",
     "stubbing"
   ],
-  "author": "Sahil Sharma (sahilaug@gmail.com)",
-  "license": "ISC",
+  "author": "Specmatic Team (info@specmaic.io)",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/specmatic/specmatic-node/issues"
   },
