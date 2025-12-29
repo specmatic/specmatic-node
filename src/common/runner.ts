@@ -15,12 +15,18 @@ function callJar(jarPath: string, args: (string | number)[], done: (error: any) 
     if (process.env['endpointsAPI']) {
         argsList.push(`-DendpointsAPI="${process.env['endpointsAPI']}"`);
     }
+    // Pass configuration through environment variables instead of JVM -D system properties
+    const envVars: NodeJS.ProcessEnv = { ...process.env };
+    if (!envVars['SPECMATIC_EXECUTOR']) {
+        envVars['SPECMATIC_EXECUTOR'] = "npm"
+    }
+
     argsList.push(...['-jar', jarPath]);
     argsList.push(...args.map(arg => String(arg)));
     const prettyPrintedCLIArgs = [`java`, ...argsList].map(arg => JSON.stringify(arg)).join(' ');
 
     logger.info(`CLI: Running command: ${prettyPrintedCLIArgs}`);
-    const javaProcess: ChildProcess = spawn('java', argsList, { stdio: 'pipe', stderr: 'pipe', shell: false, env: process.env } as SpawnOptions);
+    const javaProcess: ChildProcess = spawn('java', argsList, { stdio: 'pipe', stderr: 'pipe', shell: false, env: envVars } as SpawnOptions);
     javaProcess.stdout?.on('data', function (data: String) {
         onOutput(`${data}`, false);
     });
