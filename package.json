@@ -1,7 +1,7 @@
 {
   "name": "specmatic",
-  "version": "2.43.2",
-  "specmaticVersion": "2.43.2",
+  "version": "2.43.3",
+  "specmaticVersion": "2.43.3",
   "description": "Node wrapper for Specmatic",
   "main": "dist/index.js",
   "scripts": {
