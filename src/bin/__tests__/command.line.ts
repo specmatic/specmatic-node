@@ -112,3 +112,58 @@ test('handles empty JAVA_OPTS', async () => {
         }
     }
 });
+
+test('runs mcp server directly with inherited stdio', async () => {
+    mockSpawn.mockReturnValue(javaProcessMock);
+    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+
+    const originalExecutor = process.env.SPECMATIC_EXECUTOR;
+    delete process.env.SPECMATIC_EXECUTOR;
+
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    try {
+        callSpecmaticCli(['mcp', 'server']);
+        const specmaticJarPath = path.resolve(__dirname, '..', '..', '..', specmaticCoreJarName);
+
+        expect(mockSpawn.mock.calls[0][0]).toBe('java');
+        expect(mockSpawn.mock.calls[0][1]).toEqual(['-jar', path.resolve(specmaticJarPath), 'mcp', 'server']);
+        expect(mockSpawn.mock.calls[0][2]).toMatchObject({
+            stdio: 'inherit',
+            shell: false,
+            env: expect.objectContaining({
+                SPECMATIC_EXECUTOR: 'npm',
+            }),
+        });
+        expect(consoleLogSpy).not.toHaveBeenCalled();
+    } finally {
+        consoleLogSpy.mockRestore();
+        if (originalExecutor !== undefined) {
+            process.env.SPECMATIC_EXECUTOR = originalExecutor;
+        } else {
+            delete process.env.SPECMATIC_EXECUTOR;
+        }
+    }
+});
+
+test('runs mcp server directly when a root flag appears before it', async () => {
+    mockSpawn.mockReturnValue(javaProcessMock);
+    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    try {
+        callSpecmaticCli(['--verbose', 'mcp', 'server']);
+        const specmaticJarPath = path.resolve(__dirname, '..', '..', '..', specmaticCoreJarName);
+
+        expect(mockSpawn.mock.calls[0][0]).toBe('java');
+        expect(mockSpawn.mock.calls[0][1]).toEqual(['-jar', path.resolve(specmaticJarPath), '--verbose', 'mcp', 'server']);
+        expect(mockSpawn.mock.calls[0][2]).toMatchObject({
+            stdio: 'inherit',
+            shell: false,
+        });
+        expect(consoleLogSpy).not.toHaveBeenCalled();
+    } finally {
+        consoleLogSpy.mockRestore();
+    }
+});
